@@ -14,6 +14,7 @@ import torch.nn as nn
 import torch.ao.quantization.quantize_fx as quantize_fx
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from torch.ao.quantization import QuantStub, DeQuantStub, fuse_modules
 
 # TODO: Make MobileNetV3_Household model quantizable using stubs
 # Consider whether you want to quantize the whole model or parts of it only
@@ -28,6 +29,7 @@ class QuantizableMobileNetV3_Household(nn.Module):
         x = self.quant(x)
         x = self.model(x)
         x = self.dequant(x)
+        return x
     
     def fuse_model(self) -> None:
         """
@@ -151,15 +153,16 @@ def _apply_static_quantization(
         calibration_num_batches = len(calibration_data_loader)
         
     torch.backends.quantized.engine = backend
-    model.qconfig = torch.ao.quantization.get_default_qconfig(backend)
+    qconfig_mapping = torch.ao.quantization.get_default_qconfig_mapping(backend)
 
-    torch.ao.quantization.prepare(model, inplace=True)
+    example_inputs = next(iter(calibration_data_loader))[0]
+    prepared_model = quantize_fx.prepare_fx(model, qconfig_mapping, example_inputs)
 
     with torch.no_grad():
         for i, batch in enumerate(calibration_data_loader):
             if i >= calibration_num_batches:
                 break
             inputs = batch[0]
-            model(inputs)
+            prepared_model(inputs)
 
-    return torch.ao.quantization.convert(model, inplace=True)
+    return quantize_fx.convert_fx(prepared_model)
