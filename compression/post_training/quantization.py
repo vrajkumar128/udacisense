@@ -19,10 +19,15 @@ from tqdm import tqdm
 # Consider whether you want to quantize the whole model or parts of it only
 class QuantizableMobileNetV3_Household(nn.Module):
     def __init__(self, original_model):
-        pass
+        super().__init__()
+        self.quant = QuantStub()
+        self.model = original_model
+        self.dequant = DeQuantStub()
 
     def forward(self, x):
-        pass
+        x = self.quant(x)
+        x = self.model(x)
+        x = self.dequant(x)
     
     def fuse_model(self) -> None:
         """
@@ -33,11 +38,18 @@ class QuantizableMobileNetV3_Household(nn.Module):
         """
         print("Fusing layers...")
 
-        # Get list of modules to fuse
-        modules_to_fuse = []
-
         # TODO: Identify patterns to fuse (Conv+BN, Conv+BN+ReLU, etc.)
-        pass
+        for module in self.model.modules():
+            if not isinstance(module, nn.Sequential):
+                continue
+
+            layers = list(module)
+
+            if len(layers) >= 2 and isinstance(layers[0], nn.Conv2d) and isinstance(layers[1], nn.BatchNorm2d):
+                if len(layers) >= 3 and isinstance(layers[2], nn.ReLU):
+                    fuse_modules(module, ["0", "1", "2"], inplace=True)
+                else:
+                    fuse_modules(module, ["0", "1"], inplace=True)
         
 
 def quantize_model(
@@ -103,7 +115,11 @@ def _apply_dynamic_quantization(
     Returns:
         Dynamically quantized model
     """
-    pass
+    return torch.ao.quantization.quantize_dynamic(
+        model,
+        {nn.Linear},
+        dtype=torch.qint8
+    )
                 
 
 # TODO: Implement static quantization, if selected
@@ -134,4 +150,16 @@ def _apply_static_quantization(
     if calibration_num_batches is None:
         calibration_num_batches = len(calibration_data_loader)
         
-    pass
+    torch.backends.quantized.engine = backend
+    model.qconfig = torch.ao.quantization.get_default_qconfig(backend)
+
+    torch.ao.quantization.prepare(model, inplace=True)
+
+    with torch.no_grad():
+        for i, batch in enumerate(calibration_data_loader):
+            if i >= calibration_num_batches:
+                break
+            inputs = batch[0]
+            model(inputs)
+
+    return torch.ao.quantization.convert(model, inplace=True)
