@@ -269,6 +269,15 @@ def train_model(
               f"Test Loss: {test_loss:.4f}, Test Acc: {test_accuracy:.2f}%, "
               f"LR: {lr:.6f}, Time: {epoch_time:.2f}s")
         
+        # Record statistics
+        training_stats["epoch"].append(epoch + 1)
+        training_stats["train_loss"].append(train_loss)
+        training_stats["train_accuracy"].append(train_accuracy)
+        training_stats["test_loss"].append(test_loss)
+        training_stats["test_accuracy"].append(test_accuracy)
+        training_stats["epoch_time"].append(epoch_time)
+        training_stats["lr"].append(lr)
+        
         # Save best model
         if test_accuracy > best_accuracy:
             print(f"New best model! Saving... ({test_accuracy:.2f}%)")
@@ -284,15 +293,6 @@ def train_model(
         if early_stop_counter >= patience:
             print(f"Early stopping at epoch {epoch+1}. No improvement for {patience} epochs.")
             break
-        
-        # Record statistics
-        training_stats["epoch"].append(epoch + 1)
-        training_stats["train_loss"].append(train_loss)
-        training_stats["train_accuracy"].append(train_accuracy)
-        training_stats["test_loss"].append(test_loss)
-        training_stats["test_accuracy"].append(test_accuracy)
-        training_stats["epoch_time"].append(epoch_time)
-        training_stats["lr"].append(lr)
     
     print(f"Training completed. Best accuracy: {best_accuracy:.2f}%")
     print(f"Best model saved as '{checkpoint_path}' at epoch {best_epoch}")
@@ -448,19 +448,19 @@ def validate_single_epoch(
             loss = criterion(outputs, labels)
             
             # Statistics
-            total_loss += loss.item()
+            total_loss += loss.item() * inputs.size(0)
             _, predicted = outputs.max(1)
             total += labels.size(0)
             correct += predicted.eq(labels).sum().item()
             
             # Print statistics
             pbar.set_postfix({
-                "loss": total_loss / (pbar.n + 1),
+                "loss": total_loss / total,
                 "acc": 100. * correct / total
             })
     
     # Calculate metrics
-    avg_loss = total_loss / len(dataloader)
+    avg_loss = total_loss / total
     accuracy = 100. * correct / total
     
     return avg_loss, accuracy
