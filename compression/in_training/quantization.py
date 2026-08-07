@@ -46,15 +46,6 @@ class QuantizableMobileNetV3_Household(nn.Module):
             pretrained: Whether to load ImageNet pretrained weights
         """
         super().__init__()
-
-        if quantize:
-            raise ValueError(
-                "quantize=True returns an already-converted int8 model, but the "
-                "classifier is replaced with float layers below, which would leave "
-                "a float head attached to a quantized backbone with no dequant "
-                "between them. Build with quantize=False, then use "
-                "_prepare_qat_model() and _convert_qat_model_to_quantized()."
-            )
         
         # Create a quantizable MobileNetV3 Small
         inverted_residual_setting, last_channel = _mobilenet_v3_conf("mobilenet_v3_small")
@@ -119,10 +110,6 @@ def _prepare_qat_model(model: nn.Module, backend: str = "fbgemm") -> nn.Module:
     Returns:
         Model prepared for QAT
     """
-    supported = torch.backends.quantized.supported_engines
-    if backend not in supported:
-        raise ValueError(f"backend {backend!r} unavailable; supported: {supported}")
-
     torch.backends.quantized.engine = backend
     model.train()
 
@@ -325,8 +312,6 @@ def train_model_qat(
     print("Converting best QAT model to fully quantized model...")
     if best_epoch > 0:
         model.load_state_dict(torch.load(checkpoint_path, map_location="cpu"))
-    else:
-        print("No checkpoint was saved; converting the final in-memory model instead.")
     quantized_model = _convert_qat_model_to_quantized(model)
     
     return quantized_model, training_stats, best_accuracy, best_epoch

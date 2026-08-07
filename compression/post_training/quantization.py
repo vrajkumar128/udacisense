@@ -11,8 +11,8 @@ from typing import Dict, Any, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
-import torch.ao.quantization.quantize_fx as quantize_fx
 from torch.utils.data import DataLoader
+from torchvision.ops.misc import SqueezeExcitation
 from tqdm import tqdm
 from torch.ao.quantization import QuantStub, DeQuantStub, fuse_modules
 
@@ -34,14 +34,15 @@ class QuantizableMobileNetV3_Household(nn.Module):
     def fuse_model(self) -> None:
         """
         Fuse conv, bn, relu layers for better quantization results
-
-        Args:
-            model: Model to fuse
         """
         print("Fusing layers...")
 
         # TODO: Identify patterns to fuse (Conv+BN, Conv+BN+ReLU, etc.)
         for module in self.model.modules():
+            if isinstance(module, SqueezeExcitation):
+                fuse_modules(module, ["fc1", "activation"], inplace=True)
+                continue
+
             if not isinstance(module, nn.Sequential):
                 continue
 
@@ -86,6 +87,8 @@ def quantize_model(
     
     # Create a copy of the model for quantization
     model_to_quantize = copy.deepcopy(model)
+
+    model_to_quantize.cpu()
     
     # Set model to evaluation mode
     model_to_quantize.eval()
@@ -93,7 +96,7 @@ def quantize_model(
     # NOTE: Feel free to not implement all quantization types
     # Apply quantization based on type
     if quantization_type.lower() == "dynamic":
-        return _apply_dynamic_quantization(model_to_quantize)
+        return _apply_dynamic_quantization(model_to_quantize, backend)
     elif quantization_type.lower() == "static":
         if calibration_data_loader is None:
             raise ValueError("Static quantization requires a calibration_data_loader")
@@ -104,7 +107,8 @@ def quantize_model(
 # TODO: Implement dynamic quantization, if selected
 # Remember to look at built-in pytorch functionalities whenever possible
 def _apply_dynamic_quantization(
-    model: nn.Module
+    model: nn.Module,
+    backend: str = "fbgemm",
 ) -> nn.Module:
     """Apply dynamic quantization to a model.
     
@@ -113,10 +117,13 @@ def _apply_dynamic_quantization(
     
     Args:
         model: Model to quantize (in eval mode)
+        backend: Quantization backend, either "fbgemm" (x86) or "qnnpack" (ARM)
         
     Returns:
         Dynamically quantized model
     """
+    torch.backends.quantized.engine = backend
+
     return torch.ao.quantization.quantize_dynamic(
         model,
         {nn.Linear},
@@ -153,16 +160,18 @@ def _apply_static_quantization(
         calibration_num_batches = len(calibration_data_loader)
         
     torch.backends.quantized.engine = backend
-    qconfig_mapping = torch.ao.quantization.get_default_qconfig_mapping(backend)
 
-    example_inputs = (next(iter(calibration_data_loader))[0],)
-    prepared_model = quantize_fx.prepare_fx(model, qconfig_mapping, example_inputs)
+    quantizable_model = QuantizableMobileNetV3_Household(model)
+    quantizable_model.eval()
+    quantizable_model.fuse_model()
+
+    quantizable_model.qconfig = torch.ao.quantization.get_default_qconfig(backend)
+    torch.ao.quantization.prepare(quantizable_model, inplace=True)
 
     with torch.no_grad():
-        for i, batch in enumerate(calibration_data_loader):
+        for i, batch in enumerate(tqdm(calibration_data_loader, total=calibration_num_batches)):
             if i >= calibration_num_batches:
                 break
-            inputs = batch[0]
-            prepared_model(inputs)
+            quantizable_model(batch[0])
 
-    return quantize_fx.convert_fx(prepared_model)
+    return torch.ao.quantization.convert(quantizable_model, inplace=False)
