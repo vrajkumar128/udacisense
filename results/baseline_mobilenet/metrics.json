@@ -1,30 +1,30 @@
 {
     "accuracy": {
-        "top1_acc": 87.8,
-        "top5_acc": 99.1
+        "top1_acc": 80.4,
+        "top5_acc": 98.3
     },
     "per_class_accuracy": {
-        "clock": 95.0,
-        "keyboard": 93.0,
-        "lamp": 94.0,
-        "telephone": 74.0,
-        "television": 89.0,
-        "bed": 86.0,
-        "chair": 92.0,
+        "clock": 83.0,
+        "keyboard": 85.0,
+        "lamp": 87.0,
+        "telephone": 77.0,
+        "television": 79.0,
+        "bed": 71.0,
+        "chair": 86.0,
         "couch": 74.0,
-        "table": 88.0,
-        "wardrobe": 93.0
+        "table": 65.0,
+        "wardrobe": 97.0
     },
     "timing": {
         "cpu": {
-            "total_time_ms": 17495.803594589233,
-            "avg_time_ms": 174.95803594589233,
-            "fps": 5.715656297772232
+            "total_time_ms": 13296.056032180786,
+            "avg_time_ms": 132.96056032180786,
+            "fps": 7.521027269888712
         },
         "cuda": {
-            "total_time_ms": 523.2980251312256,
-            "avg_time_ms": 5.232980251312256,
-            "fps": 191.0956953734411
+            "total_time_ms": 537.2679233551025,
+            "avg_time_ms": 5.372679233551025,
+            "fps": 186.12687572249845
         }
     },
     "size": {
