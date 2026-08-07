@@ -155,7 +155,7 @@ def _apply_static_quantization(
     torch.backends.quantized.engine = backend
     qconfig_mapping = torch.ao.quantization.get_default_qconfig_mapping(backend)
 
-    example_inputs = next(iter(calibration_data_loader))[0]
+    example_inputs = (next(iter(calibration_data_loader))[0],)
     prepared_model = quantize_fx.prepare_fx(model, qconfig_mapping, example_inputs)
 
     with torch.no_grad():
