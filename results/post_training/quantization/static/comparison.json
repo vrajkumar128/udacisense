@@ -1,31 +1,31 @@
 {
     "baseline": {
         "accuracy": {
-            "top1_acc": 87.8,
-            "top5_acc": 99.1
+            "top1_acc": 80.4,
+            "top5_acc": 98.3
         },
         "per_class_accuracy": {
-            "clock": 95.0,
-            "keyboard": 93.0,
-            "lamp": 94.0,
-            "telephone": 74.0,
-            "television": 89.0,
-            "bed": 86.0,
-            "chair": 92.0,
+            "clock": 83.0,
+            "keyboard": 85.0,
+            "lamp": 87.0,
+            "telephone": 77.0,
+            "television": 79.0,
+            "bed": 71.0,
+            "chair": 86.0,
             "couch": 74.0,
-            "table": 88.0,
-            "wardrobe": 93.0
+            "table": 65.0,
+            "wardrobe": 97.0
         },
         "timing": {
             "cpu": {
-                "total_time_ms": 12500.046730041504,
-                "avg_time_ms": 125.00046730041502,
-                "fps": 7.999970092885243
+                "total_time_ms": 13496.740579605103,
+                "avg_time_ms": 134.96740579605103,
+                "fps": 7.409196272995704
             },
             "cuda": {
-                "total_time_ms": 520.4012393951416,
-                "avg_time_ms": 5.204012393951416,
-                "fps": 192.1594193669278
+                "total_time_ms": 546.9586849212646,
+                "avg_time_ms": 5.4695868492126465,
+                "fps": 182.8291656332235
             }
         },
         "size": {
@@ -41,34 +41,34 @@
     },
     "optimized": {
         "accuracy": {
-            "top1_acc": 14.4,
-            "top5_acc": 55.9
+            "top1_acc": 31.4,
+            "top5_acc": 76.1
         },
         "per_class_accuracy": {
-            "clock": 19.0,
-            "keyboard": 97.0,
-            "lamp": 18.0,
+            "clock": 35.0,
+            "keyboard": 85.0,
+            "lamp": 53.0,
             "telephone": 0.0,
-            "television": 3.0,
+            "television": 10.0,
             "bed": 0.0,
-            "chair": 0.0,
-            "couch": 3.0,
-            "table": 2.0,
-            "wardrobe": 3.0
+            "chair": 6.0,
+            "couch": 36.0,
+            "table": 35.0,
+            "wardrobe": 54.0
         },
         "timing": {
             "cpu": {
-                "total_time_ms": 8101.138114929199,
-                "avg_time_ms": 81.01138114929199,
-                "fps": 12.343944589182449
+                "total_time_ms": 8099.879264831543,
+                "avg_time_ms": 80.99879264831543,
+                "fps": 12.345863034549781
             },
             "cuda": {}
         },
         "size": {
             "total_params": 0,
             "trainable_params": 0,
-            "model_size_bytes": 1836168,
-            "model_size_mb": 1.7511062622070312
+            "model_size_bytes": 1847890,
+            "model_size_mb": 1.7622852325439453
         },
         "memory": {
             "peak_memory_mb": null,
@@ -76,15 +76,15 @@
         }
     },
     "improvements": {
-        "size_reduction": 0.7060220578558416,
+        "size_reduction": 0.7041453181251559,
         "params_reduction": 1.0,
         "inference": {
             "cpu": {
-                "speedup": 1.542998841978236,
-                "reduction": 0.3519113736223367
+                "speedup": 1.6662891060865461,
+                "reduction": 0.39986404739294956
             }
         },
-        "accuracy_change": -0.7339999999999999,
+        "accuracy_change": -0.49000000000000005,
         "memory_reduction": null
     }
 }
