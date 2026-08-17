@@ -18,6 +18,7 @@ from torchvision.models.quantization.mobilenetv3 import _mobilenet_v3_conf, _mob
 from tqdm import tqdm
 
 from utils.model import get_model_size, save_model, train_single_epoch, validate_single_epoch
+import torch.ao.quantization.quantize_fx as quantize_fx
 
 
 class QuantizableMobileNetV3_Household(nn.Module):
@@ -113,11 +114,17 @@ def _prepare_qat_model(model: nn.Module, backend: str = "fbgemm") -> nn.Module:
     torch.backends.quantized.engine = backend
     model.train()
 
-    if hasattr(model, "fuse_model"):
-        model.fuse_model(is_qat=True)
+    qconfig_mapping = torch.ao.quantization.get_default_qat_qconfig_mapping(backend)
+    for name in [
+        "model.features.0",
+        "model.features.1.block.0",
+        "model.features.2.block.0",
+        "model.features.2.block.1"
+    ]:
+        qconfig_mapping = qconfig_mapping.set_module_name(name, None)
 
-    model.qconfig = torch.ao.quantization.get_default_qat_qconfig(backend)
-    torch.ao.quantization.prepare_qat(model, inplace=True)
+    example_inputs = (torch.randn(1, 3, 32, 32),)
+    model = quantize_fx.prepare_qat_fx(model, qconfig_mapping, example_inputs)
 
     return model
 
@@ -136,7 +143,7 @@ def _convert_qat_model_to_quantized(model: nn.Module) -> nn.Module:
     model = model.cpu()
     model.eval()
 
-    quantized = torch.ao.quantization.convert(model, inplace=False)
+    quantized = quantize_fx.convert_fx(model)
 
     return quantized
 
@@ -147,7 +154,7 @@ def train_model_qat(
     test_loader: torch.utils.data.DataLoader,
     training_config: Dict[str, Any],
     checkpoint_path: str,
-    backend: str = "fbgemm",
+    backend: str = "x86",
 ) -> Tuple[nn.Module, Dict[str, Any], float, int]:
     """Train a model using quantization-aware training.
     

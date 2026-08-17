@@ -131,7 +131,10 @@ def save_model(model: nn.Module, path: str) -> None:
     
     # Special handling for FX-optimized models
     if hasattr(model, '_modules') and hasattr(model, 'graph'):
-        torch.save(model, path)
+        try:
+            torch.save(model, path)
+        except Exception:
+            torch.save(model.state_dict(), path)
     else:
         torch.save(model.state_dict(), path)
 

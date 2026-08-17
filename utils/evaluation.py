@@ -197,11 +197,16 @@ def measure_inference_time(
         }
     """
     results = {}
+
+    is_quantized = any(hasattr(m, '_packed_params') for m in model.modules())
     
     # Test on CPU
     try:
         cpu_device = torch.device('cpu')
-        model_cpu = copy.deepcopy(model).to(cpu_device)
+        if is_quantized:
+            model_cpu = model
+        else:
+            model_cpu = copy.deepcopy(model).to(cpu_device)
 
         ## Create dummy input for CPU
         dummy_input_cpu = torch.randn(input_size, device=cpu_device)
@@ -233,7 +238,7 @@ def measure_inference_time(
         print("WARNING: Model does not support inference with cpu. Skipping latency evaluation for CPU.")
 
     # Test on CUDA if available
-    if torch.cuda.is_available():
+    if torch.cuda.is_available() and not is_quantized:
         try:
             cuda_device = torch.device('cuda')
             model_cuda = copy.deepcopy(model).to(cuda_device)
@@ -269,6 +274,9 @@ def measure_inference_time(
         except:
             results['cuda'] = {}
             print("WARNING: Model does not support inference with cuda. Skipping latency evaluation for GPU.")
+    elif is_quantized:
+        results['cuda'] = {}
+        print("WARNING: Model does not support inference with cuda. Skipping latency evaluation for GPU.")
     
     return results
 

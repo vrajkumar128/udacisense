@@ -54,7 +54,29 @@ def compute_sparsity_schedule(
     # TODO: Create schedule
     # Feel free to implement one or all schedule types
     # Remember that sparsity should increase following the schedule type in [start_epoch, end_epoch]
-    sparsity_schedule = None
+    span = end_epoch - start_epoch
+    delta = final_sparsity - initial_sparsity
+    sparsity_schedule = []
+
+    for epoch in range(epochs):
+        if epoch <= start_epoch:
+            sparsity = initial_sparsity
+        elif epoch >= end_epoch:
+            sparsity = final_sparsity
+        else:
+            progress = (epoch - start_epoch) / span
+            
+            if schedule_type == "linear":
+                sparsity = initial_sparsity + (delta * progress)
+            elif schedule_type == "cubic":
+                sparsity = final_sparsity - (delta * (1.0 - progress) ** 3)
+            else:
+                k = 3.0
+                scale = (1.0 - math.exp(-k * progress)) / (1.0 - math.exp(-k))
+                sparsity = initial_sparsity + (delta * scale)
+
+        sparsity_schedule.append(float(sparsity))
+
     return sparsity_schedule
 
 def prune_model_to_target(
@@ -79,6 +101,25 @@ def prune_model_to_target(
     # Feel free to implement one or all pruning methods
     # Remember that you can find modules to prune with the find_prunable_modules() function
     # and that pruning reparameterization should only be applied once
+    parameters_to_prune = []
+
+    for module, param_name in find_prunable_modules(model):
+        if only_prune_conv and not isinstance(module, nn.Conv2d):
+            continue
+        if hasattr(module, f'{param_name}_orig'):
+            continue # don't prune the same weight twice
+        parameters_to_prune.append((module, param_name))
+
+    if pruning_method == global_unstructured:
+        prune.global_unstructured(
+            parameters_to_prune, pruning_method=prune.L1Unstructured, amount=target_sparsity
+        )
+    else:
+        prune_fn = (prune.l1_unstructured if pruning_method == "l1_unstructured" 
+            else prune.random_unstructured)
+
+        for module, param_name in parameters_to_prune:
+            prune_fn(module, name=param_name, amount=target_sparsity)
     
     return model
 
@@ -182,6 +223,18 @@ def train_with_pruning(
         # TODO: Apply pruning if in pruning phase and it's a pruning frequency epoch
         # Remember to use the target sparsity for the current epoch
         # You can use the prune_model_to_target() function to update the model variable directly
+        if start_epoch <= epoch <= end_epoch: # check if in pruning phase
+            if (epoch - start_epoch) % pruning_frequency == 0: # check if pruning epoch
+                epoch_target_sparsity = sparsity_schedule[epoch]
+
+                if epoch_target_sparsity > 0:
+                    model = prune_model_to_target(
+                        model,
+                        target_sparsity=epoch_target_sparsity,
+                        pruning_method=pruning_method,
+                        only_prune_conv=only_prune_conv
+                    )
+
         
         # Get current sparsity (for logging)
         current_sparsity = calculate_sparsity(model)

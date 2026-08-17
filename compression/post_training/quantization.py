@@ -15,6 +15,7 @@ from torch.utils.data import DataLoader
 from torchvision.ops.misc import SqueezeExcitation
 from tqdm import tqdm
 from torch.ao.quantization import QuantStub, DeQuantStub, fuse_modules
+import torch.ao.quantization.quantize_fx as quantize_fx
 
 # TODO: Make MobileNetV3_Household model quantizable using stubs
 # Consider whether you want to quantize the whole model or parts of it only
@@ -60,7 +61,7 @@ def quantize_model(
     calibration_data_loader: Optional[DataLoader] = None,
     calibration_num_batches: Optional[int] = None,
     quantization_type: str = "dynamic",
-    backend: str = "fbgemm",
+    backend: str = "x86",
 ) -> nn.Module:
     """Apply post-training quantization to a PyTorch model.
     
@@ -81,10 +82,6 @@ def quantize_model(
         ValueError: If an unsupported backend or quantization type is specified,
                    or if static quantization is requested without calibration data
     """
-    # Verify backend
-    if backend not in ["fbgemm", "qnnpack"]:
-        raise ValueError("Backend must be either 'fbgemm' (x86) or 'qnnpack' (ARM)")
-    
     # Create a copy of the model for quantization
     model_to_quantize = copy.deepcopy(model)
 
@@ -108,7 +105,7 @@ def quantize_model(
 # Remember to look at built-in pytorch functionalities whenever possible
 def _apply_dynamic_quantization(
     model: nn.Module,
-    backend: str = "fbgemm",
+    backend: str = "x86",
 ) -> nn.Module:
     """Apply dynamic quantization to a model.
     
@@ -161,17 +158,24 @@ def _apply_static_quantization(
         
     torch.backends.quantized.engine = backend
 
-    quantizable_model = QuantizableMobileNetV3_Household(model)
-    quantizable_model.eval()
-    quantizable_model.fuse_model()
+    qconfig_mapping = torch.ao.quantization.get_default_qconfig_mapping(backend)
+    for name in [
+        "model.features.0",
+        "model.features.1.block.0",
+        "model.features.2.block.0",
+        "model.features.2.block.1"
+    ]:
+        qconfig_mapping = qconfig_mapping.set_module_name(name, None)
 
-    quantizable_model.qconfig = torch.ao.quantization.get_default_qconfig(backend)
-    torch.ao.quantization.prepare(quantizable_model, inplace=True)
+
+
+    example_inputs = (next(iter(calibration_data_loader))[0],)
+    prepared_model = quantize_fx.prepare_fx(model, qconfig_mapping, example_inputs)
 
     with torch.no_grad():
         for i, batch in enumerate(tqdm(calibration_data_loader, total=calibration_num_batches)):
             if i >= calibration_num_batches:
                 break
-            quantizable_model(batch[0])
+            prepared_model(batch[0])
 
-    return torch.ao.quantization.convert(quantizable_model, inplace=False)
+    return quantize_fx.convert_fx(prepared_model)
