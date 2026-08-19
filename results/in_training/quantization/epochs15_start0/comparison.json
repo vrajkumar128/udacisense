@@ -18,14 +18,14 @@
         },
         "timing": {
             "cpu": {
-                "total_time_ms": 13095.463991165161,
-                "avg_time_ms": 130.9546399116516,
-                "fps": 7.636231909573031
+                "total_time_ms": 19399.354457855225,
+                "avg_time_ms": 193.99354457855225,
+                "fps": 5.154810703482342
             },
             "cuda": {
-                "total_time_ms": 570.6095695495605,
-                "avg_time_ms": 5.7060956954956055,
-                "fps": 175.25117932904638
+                "total_time_ms": 580.6143283843994,
+                "avg_time_ms": 5.806143283843994,
+                "fps": 172.231367900026
             }
         },
         "size": {
@@ -41,26 +41,26 @@
     },
     "optimized": {
         "accuracy": {
-            "top1_acc": 87.0,
-            "top5_acc": 98.4
+            "top1_acc": 86.8,
+            "top5_acc": 98.8
         },
         "per_class_accuracy": {
-            "clock": 89.0,
+            "clock": 88.0,
             "keyboard": 97.0,
-            "lamp": 84.0,
-            "telephone": 82.0,
-            "television": 91.0,
+            "lamp": 89.0,
+            "telephone": 83.0,
+            "television": 87.0,
             "bed": 85.0,
-            "chair": 87.0,
-            "couch": 72.0,
-            "table": 88.0,
-            "wardrobe": 98.0
+            "chair": 86.0,
+            "couch": 70.0,
+            "table": 82.0,
+            "wardrobe": 99.0
         },
         "timing": {
             "cpu": {
-                "total_time_ms": 10300.678253173828,
-                "avg_time_ms": 103.00678253173828,
-                "fps": 9.708098587506912
+                "total_time_ms": 9800.87924003601,
+                "avg_time_ms": 98.00879240036011,
+                "fps": 10.203166221200433
             },
             "cuda": {}
         },
@@ -80,11 +80,11 @@
         "params_reduction": 0.9982147835294148,
         "inference": {
             "cpu": {
-                "speedup": 1.2713205547537811,
-                "reduction": 0.2134163203286903
+                "speedup": 1.9793483811748247,
+                "reduction": 0.4947832278992449
             }
         },
-        "accuracy_change": -0.029000000000000057,
+        "accuracy_change": -0.031000000000000087,
         "memory_reduction": null
     }
 }

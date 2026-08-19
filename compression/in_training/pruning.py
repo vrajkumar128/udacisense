@@ -15,6 +15,7 @@ import torch.nn.utils.prune as prune
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from typing import Dict, Any, Tuple, Optional, List, Callable, Union, Literal
+import math
 
 from utils.model import count_parameters, save_model, load_model, train_single_epoch, validate_single_epoch
 from utils.compression import calculate_sparsity, find_prunable_modules, is_pruned
@@ -106,20 +107,25 @@ def prune_model_to_target(
     for module, param_name in find_prunable_modules(model):
         if only_prune_conv and not isinstance(module, nn.Conv2d):
             continue
-        if hasattr(module, f'{param_name}_orig'):
-            continue # don't prune the same weight twice
+
         parameters_to_prune.append((module, param_name))
 
-    if pruning_method == global_unstructured:
+    current_sparsity = calculate_sparsity(model) / 100.0
+    if current_sparsity >= target_sparsity:
+        return model
+
+    amount = (target_sparsity - current_sparsity) / (1.0 - current_sparsity)
+
+    if pruning_method == "global_unstructured":
         prune.global_unstructured(
-            parameters_to_prune, pruning_method=prune.L1Unstructured, amount=target_sparsity
+            parameters_to_prune, pruning_method=prune.L1Unstructured, amount=amount
         )
     else:
         prune_fn = (prune.l1_unstructured if pruning_method == "l1_unstructured" 
             else prune.random_unstructured)
 
         for module, param_name in parameters_to_prune:
-            prune_fn(module, name=param_name, amount=target_sparsity)
+            prune_fn(module, name=param_name, amount=amount)
     
     return model
 
@@ -281,7 +287,7 @@ def train_with_pruning(
             save_model(best_model, checkpoint_path)
                 
             early_stop_counter = 0  # Reset early stopping counter
-        else:
+        elif current_sparsity > 0:
             early_stop_counter += 1
         
         # Early stopping condition
