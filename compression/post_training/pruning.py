@@ -74,6 +74,9 @@ def prune_model(
     print(f"Final model sparsity: {final_sparsity:.2f}%")
     
     # 5. TODO: Remove pruning reparameterization to make the pruning permanent
+    for module, param_name in modules_to_prune:
+        if hasattr(module, f'{param_name}_mask'):
+            prune.remove(module, param_name)
     
     return model
 
@@ -94,7 +97,13 @@ def _apply_unstructured_pruning(
     Returns:
         Pruned model
     """
-    pass
+    for module, param_name in modules_to_prune:
+        if hasattr(module, f'{param_name}_orig'):
+            continue  # don't prune the same weight twice
+        
+        prune.l1_unstructured(module, name=param_name, amount=amount)
+    
+    return model
 
 # TODO: Implement random unstructured pruning, if selected
 def _apply_random_unstructured_pruning(
@@ -113,7 +122,13 @@ def _apply_random_unstructured_pruning(
     Returns:
         Pruned model
     """
-    pass
+    for module, param_name in modules_to_prune:
+        if hasattr(module, f'{param_name}_orig'):
+            continue  # don't prune the same weight twice
+        
+        prune.random_unstructured(module, name=param_name, amount=amount)
+    
+    return model
 
 # TODO: Implement structured pruning, if selected
 def _apply_structured_pruning(
@@ -136,7 +151,26 @@ def _apply_structured_pruning(
     Returns:
         Pruned model
     """
-    pass
+    if n is None:
+        n = 1
+    
+    for module, param_name in modules_to_prune:
+        if hasattr(module, f'{param_name}_orig'):
+            continue  # don't prune the same weight twice
+        
+        param_dim = dim
+        if param_dim is None:
+            if isinstance(module, nn.Linear):
+                param_dim = 1  # input features
+            else: # conv layer
+                param_dim = 0
+        
+        if getattr(module, param_name).dim() == 1: # bias parameter
+            param_dim = 0
+        
+        prune.ln_structured(module, name=param_name, amount=amount, n=n, dim=param_dim)
+    
+    return model
 
 # TODO: Implement global pruning, if selected
 def _apply_global_pruning(
@@ -155,4 +189,8 @@ def _apply_global_pruning(
     Returns:
         Pruned model
     """
-    pass
+    prune.global_unstructured(
+        modules_to_prune, pruning_method=prune.L1Unstructured, amount=amount
+    )
+
+    return model
