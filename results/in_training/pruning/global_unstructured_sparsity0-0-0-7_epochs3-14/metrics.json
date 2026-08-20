@@ -1,0 +1,40 @@
+{
+    "accuracy": {
+        "top1_acc": 89.5,
+        "top5_acc": 98.9
+    },
+    "per_class_accuracy": {
+        "clock": 94.0,
+        "keyboard": 93.0,
+        "lamp": 93.0,
+        "telephone": 82.0,
+        "television": 93.0,
+        "bed": 85.0,
+        "chair": 94.0,
+        "couch": 80.0,
+        "table": 86.0,
+        "wardrobe": 95.0
+    },
+    "timing": {
+        "cpu": {
+            "total_time_ms": 15503.748178482056,
+            "avg_time_ms": 155.03748178482056,
+            "fps": 6.450053164485211
+        },
+        "cuda": {
+            "total_time_ms": 573.4415054321289,
+            "avg_time_ms": 5.734415054321289,
+            "fps": 174.3857029055525
+        }
+    },
+    "size": {
+        "total_params": 1528106,
+        "trainable_params": 1528106,
+        "model_size_bytes": 6249330,
+        "model_size_mb": 5.95982551574707
+    },
+    "memory": {
+        "peak_memory_mb": 137.4931640625,
+        "allocated_memory_mb": 135.00537109375
+    }
+}

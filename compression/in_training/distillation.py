@@ -20,7 +20,20 @@ class MobileNetV3_Household_Small(nn.Module):
     def __init__(self, num_classes=10, width_mult=0.6, linear_size=256, dropout=0.2):
         super().__init__()
         
-        pass
+        self.num_classes = num_classes
+        self.width_mult = width_mult
+        self.linear_size = linear_size
+        self.dropout = dropout
+
+        self.model = models.mobilenet_v3_small(weights=None, width_mult=width_mult)
+
+        last_channel = self.model.classifier[0].in_features
+        self.model.classifier = nn.Sequential(
+            nn.Linear(last_channel, linear_size),
+            nn.Hardswish(inplace=True),
+            nn.Dropout(p=dropout, inplace=True),
+            nn.Linear(linear_size, num_classes)
+        )
     
     def forward(self, x):
         # Ensure input is correctly sized
@@ -45,7 +58,13 @@ def _knowledge_distillation_loss(student_logits, teacher_logits, targets, temper
     Returns:
         Final loss combining distillation and standard cross entropy
     """
-    pass
+    soft_targets = F.softmax(teacher_logits / temperature, dim=1)
+    soft_student = F.log_softmax(student_logits / temperature, dim=1)
+
+    distillation_loss = F.kl_div(soft_student, soft_targets, reduction="batchmean") * (temperature ** 2)
+    student_loss = F.cross_entropy(student_logits, targets)
+    
+    return alpha * distillation_loss + (1.0 - alpha) * student_loss
 
 def _distill_single_epoch(
     student_model: nn.Module,
@@ -102,6 +121,10 @@ def _distill_single_epoch(
 
         # TODO: implement forward pass for student and for teacher
         # You need to create the variables: student_outputs and teacher_outputs
+        student_outputs = student_model(inputs)
+
+        with torch.no_grad():
+            teacher_outputs = teacher_model(inputs)
         
         # Compute distillation loss
         loss = _knowledge_distillation_loss(
@@ -121,6 +144,7 @@ def _distill_single_epoch(
             
         # Update weights
         optimizer.step()
+        optimizer.zero_grad()
         
         # Update statistics
         train_loss += loss.item() * inputs.size(0)
