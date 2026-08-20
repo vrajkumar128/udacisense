@@ -76,7 +76,15 @@ def _optimize_with_torchscript(
     if custom_options is None:
         custom_options = {}
     
-    pass
+    with torch.no_grad():
+        optimized_model = torch.jit.trace(model, dummy_input)
+        optimized_model = torch.jit.freeze(optimized_model)
+        optimized_model = torch.jit.optimize_for_inference(optimized_model)
+        
+        for _ in range(3):
+            optimized_model(dummy_input)
+    
+    return optimized_model
 
 
 # TODO: Implement the graph optimization techniques of your choice
@@ -102,7 +110,16 @@ def _optimize_with_torch_fx(
     if custom_options is None:
         custom_options = {}
     
-    pass
+    with torch.no_grad():
+        if dummy_input.device.type == "cpu":
+            optimized_model = optimize_for_inference(model)
+        else:
+            optimized_model = remove_dropout(fuse(model))
+        
+        for _ in range(3):
+            optimized_model(dummy_input)
+    
+    return optimized_model
 
 
 def verify_model_equivalence(
