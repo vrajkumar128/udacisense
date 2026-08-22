@@ -1,0 +1,133 @@
+{
+    "pipeline_name": "qat_torchscript",
+    "steps": [
+        {
+            "step_name": "in_training_quantization",
+            "metrics": {
+                "accuracy": {
+                    "top1_acc": 86.3,
+                    "top5_acc": 98.7
+                },
+                "per_class_accuracy": {
+                    "clock": 91.0,
+                    "keyboard": 93.0,
+                    "lamp": 94.0,
+                    "telephone": 83.0,
+                    "television": 87.0,
+                    "bed": 80.0,
+                    "chair": 92.0,
+                    "couch": 72.0,
+                    "table": 82.0,
+                    "wardrobe": 96.0
+                },
+                "timing": {
+                    "cpu": {
+                        "total_time_ms": 12700.463056564331,
+                        "avg_time_ms": 127.00463056564331,
+                        "fps": 7.873728662854874
+                    },
+                    "cuda": {}
+                },
+                "size": {
+                    "total_params": 2728,
+                    "trainable_params": 2728,
+                    "model_size_bytes": 1844746,
+                    "model_size_mb": 1.759286880493164
+                },
+                "memory": {
+                    "peak_memory_mb": null,
+                    "allocated_memory_mb": null
+                }
+            }
+        },
+        {
+            "step_name": "graph_optimization",
+            "metrics": {
+                "accuracy": {
+                    "top1_acc": 85.8,
+                    "top5_acc": 98.6
+                },
+                "per_class_accuracy": {
+                    "clock": 91.0,
+                    "keyboard": 93.0,
+                    "lamp": 93.0,
+                    "telephone": 82.0,
+                    "television": 88.0,
+                    "bed": 78.0,
+                    "chair": 92.0,
+                    "couch": 71.0,
+                    "table": 81.0,
+                    "wardrobe": 95.0
+                },
+                "timing": {
+                    "cpu": {
+                        "total_time_ms": 5096.916913986206,
+                        "avg_time_ms": 50.96916913986206,
+                        "fps": 19.619703771429897
+                    },
+                    "cuda": {}
+                },
+                "size": {
+                    "total_params": 445649,
+                    "trainable_params": 445649,
+                    "model_size_bytes": 1782596,
+                    "model_size_mb": 1.7000160217285156
+                },
+                "memory": {
+                    "peak_memory_mb": null,
+                    "allocated_memory_mb": null
+                }
+            }
+        }
+    ],
+    "final_metrics": {
+        "accuracy": {
+            "top1_acc": 85.8,
+            "top5_acc": 98.6
+        },
+        "per_class_accuracy": {
+            "clock": 91.0,
+            "keyboard": 93.0,
+            "lamp": 93.0,
+            "telephone": 82.0,
+            "television": 88.0,
+            "bed": 78.0,
+            "chair": 92.0,
+            "couch": 71.0,
+            "table": 81.0,
+            "wardrobe": 95.0
+        },
+        "timing": {
+            "cpu": {
+                "total_time_ms": 4202.720880508423,
+                "avg_time_ms": 42.02720880508423,
+                "fps": 23.79410930280541
+            },
+            "cuda": {}
+        },
+        "size": {
+            "total_params": 445649,
+            "trainable_params": 445649,
+            "model_size_bytes": 1782596,
+            "model_size_mb": 1.7000160217285156
+        },
+        "memory": {
+            "peak_memory_mb": null,
+            "allocated_memory_mb": null
+        }
+    },
+    "final_comparison": {
+        "name": "pipeline/qat_torchscript",
+        "model_size_mb": 1.7000160217285156,
+        "total_params": 445649,
+        "accuracy": 85.8,
+        "size_reduction": 0.7145991522810504,
+        "params_reduction": 0.7083651265030044,
+        "accuracy_change": -0.041000000000000085,
+        "requirements_met": true,
+        "cpu_inference_time_ms": 41.92349195480347,
+        "cpu_inference_speedup": 4.5100828384370395,
+        "cuda_inference_time_ms": null,
+        "cuda_inference_speedup": null
+    }
+}
