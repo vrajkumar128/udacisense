@@ -17,17 +17,17 @@
     },
     "timing": {
         "cpu": {
-            "total_time_ms": 5096.916913986206,
-            "avg_time_ms": 50.96916913986206,
-            "fps": 19.619703771429897
+            "total_time_ms": 4006.0904026031494,
+            "avg_time_ms": 40.060904026031494,
+            "fps": 24.96199285343641
         },
         "cuda": {}
     },
     "size": {
-        "total_params": 445649,
-        "trainable_params": 445649,
-        "model_size_bytes": 1782596,
-        "model_size_mb": 1.7000160217285156
+        "total_params": 445665,
+        "trainable_params": 445665,
+        "model_size_bytes": 1782660,
+        "model_size_mb": 1.7000770568847656
     },
     "memory": {
         "peak_memory_mb": null,
