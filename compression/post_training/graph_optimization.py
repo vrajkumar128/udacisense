@@ -79,7 +79,6 @@ def _optimize_with_torchscript(
     with torch.no_grad():
         optimized_model = torch.jit.trace(model, dummy_input)
         optimized_model = torch.jit.freeze(optimized_model)
-        optimized_model = torch.jit.optimize_for_inference(optimized_model)
         
         for _ in range(3):
             optimized_model(dummy_input)
