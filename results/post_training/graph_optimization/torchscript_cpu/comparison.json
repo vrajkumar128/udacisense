@@ -18,14 +18,14 @@
         },
         "timing": {
             "cpu": {
-                "total_time_ms": 16501.103162765503,
-                "avg_time_ms": 165.01103162765503,
-                "fps": 6.060200885577671
+                "total_time_ms": 18102.30040550232,
+                "avg_time_ms": 181.0230040550232,
+                "fps": 5.524159789636697
             },
             "cuda": {
-                "total_time_ms": 836.3592624664307,
-                "avg_time_ms": 8.363592624664307,
-                "fps": 119.5658426799736
+                "total_time_ms": 579.6205997467041,
+                "avg_time_ms": 5.796205997467041,
+                "fps": 172.52664940428323
             }
         },
         "size": {
@@ -58,17 +58,17 @@
         },
         "timing": {
             "cpu": {
-                "total_time_ms": 8100.831747055054,
-                "avg_time_ms": 81.00831747055054,
-                "fps": 12.344411428660226
+                "total_time_ms": 13198.837280273438,
+                "avg_time_ms": 131.98837280273438,
+                "fps": 7.576424943843866
             },
             "cuda": {}
         },
         "size": {
-            "total_params": 603376,
-            "trainable_params": 603376,
-            "model_size_bytes": 2413507,
-            "model_size_mb": 2.301699638366699
+            "total_params": 1531120,
+            "trainable_params": 1531120,
+            "model_size_bytes": 6124483,
+            "model_size_mb": 5.840762138366699
         },
         "memory": {
             "peak_memory_mb": null,
@@ -76,12 +76,12 @@
         }
     },
     "improvements": {
-        "size_reduction": 0.6135877429458954,
-        "params_reduction": 0.6051478104267636,
+        "size_reduction": 0.019445437979051294,
+        "params_reduction": -0.0019723762618562013,
         "inference": {
             "cpu": {
-                "speedup": 2.036964064679439,
-                "reduction": 0.5090733227258126
+                "speedup": 1.371507203332027,
+                "reduction": 0.2708751382635568
             }
         },
         "accuracy_change": 0.0,
